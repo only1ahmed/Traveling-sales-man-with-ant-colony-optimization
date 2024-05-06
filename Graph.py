@@ -62,3 +62,16 @@ def generate_random_graph(num_nodes, num_of_edges):
             graph.add_edge(node, destination, weight)
             nums.pop(rnd)
     return graph
+
+
+def hard_coded_graphs():
+    graph = Graph()
+    for i in range(20):
+        s = input().split(' ')
+        node = int(s[0])
+        destination = int(s[1])
+        weight = int(s[2])
+        graph.add_edge(node, destination, weight)
+        # graph.add_edge(destination, node, weight)
+
+    return graph

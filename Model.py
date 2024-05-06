@@ -5,11 +5,12 @@ from sortedcontainers import SortedSet
 
 NUM_OF_CITIES = 10
 NUMS_OF_ANTS = [1, 5, 10, 20]
+# NUMS_OF_ANTS = [1]
 NUM_OF_ITERATOINS = 50
-ALPHA = 2
-BETA = 3
-Q = 100
-VAPORIZING_RATE = 0.1
+ALPHA = 1
+BETA = 2
+Q = 1
+VAPORIZING_RATE = 0.2
 WEIGHT_MULTIPLIER = 10
 
 
@@ -25,22 +26,29 @@ ants = []
 
 
 def run():
-    graph = Graph.generate_random_graph(NUM_OF_CITIES, 5)
+    graph = Graph.generate_random_graph(NUM_OF_CITIES, NUM_OF_CITIES//2)
+    # graph = Graph.hard_coded_graphs()
     for i in NUMS_OF_ANTS:
+        # for _ in range(30):
         temp = graph
         train(i, temp)
-        graph.visualize()
+        # graph.visualize()
     opt_sol(graph)
 
 
 def train(num_of_ants, graph):
-
-    ants.clear()
+    optimum_path = []
+    optimal_weight = 1000000
+    ants = []
     for i in range(1, num_of_ants + 1):
         ants.append(Ant(i))
 
     for _ in range(NUM_OF_ITERATOINS):
         for ant in ants:
+            ant.path.clear()
+            ant.nodes.clear()
+            ant.total_weight = 0
+
             destination = random.randint(1, NUM_OF_CITIES)
             ant.nodes.append(destination)
             traverse(destination, ant, graph, None, destination)
@@ -50,22 +58,26 @@ def train(num_of_ants, graph):
                 for edge in edges:
                     if edge in ant.path:
                         if ant.total_weight == 0:
-                            ant.total_weight = 10000
-                        edge.to_be_added_pheromone += Q/(ant.total_weight ** 2)
+                            ant.total_weight = 100000
+                        edge.to_be_added_pheromone += Q/(ant.total_weight)
 
             if len(ant.path) == NUM_OF_CITIES:
                 print("Ant ID:", ant.id)
-                print(destination)
+                print(destination, end=' ')
+
                 for i in ant.path:
-                    print(i.destination)
+                    print(i.destination, end=' ')
                 print("Total weight: ", ant.total_weight)
-            ant.path.clear()
-            ant.nodes.clear()
-            ant.total_weight = 0
+                # if ant.total_weight != 5:
+                # exit(-1)
+
         for node, edges in graph.graph.items():
             for edge in edges:
-                edge.pheromone = (
-                    edge.pheromone * (1-VAPORIZING_RATE)) + edge.to_be_added_pheromone
+                # edge.pheromone = (
+                #     edge.pheromone + edge.to_be_added_pheromone) * (1-VAPORIZING_RATE)
+
+                edge.pheromone = (edge.pheromone) * \
+                    (1-VAPORIZING_RATE) + edge.to_be_added_pheromone
                 edge.to_be_added_pheromone = 0
 
 
@@ -126,20 +138,25 @@ def dfs(node, graph, weight, path, dest, optimal_path):
                 v.weight, path, dest, optimal_path)
             path.pop()
         elif v.destination == dest and VIS == NUM_OF_CITIES:
-            if weight < optimal_weight:
+            if weight + v.weight < optimal_weight:
                 path.append(dest)
                 optimal_path = path
-                optimal_weight = weight
+                optimal_weight = weight + v.weight
+                print(path)
+                print(weight + v.weight)
                 path.pop()
     VIS -= 1
     visited[node] = False
 
 
 def opt_sol(graph):
-    global optimal_weight
+    global optimal_weight, visited, VIS
     optimal_path = []
     for i in range(1, NUM_OF_CITIES):
-        dfs(i, graph, 0, [], i, optimal_path)
+        dfs(i, graph, 0, [i], i, optimal_path)
+        VIS = 0
+        for i in range(1, NUM_OF_CITIES + 1):
+            visited[i] = False
     print("The optimal path:")
     print(optimal_path)
     print(optimal_weight)
