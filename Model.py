@@ -28,11 +28,12 @@ ants = []
 def run():
     graph = Graph.generate_random_graph(NUM_OF_CITIES, NUM_OF_CITIES//2)
     # graph = Graph.hard_coded_graphs()
+    graph.print_graph(NUM_OF_CITIES)
     for i in NUMS_OF_ANTS:
+        graph.visualize(i, 0)
         # for _ in range(30):
         temp = graph
         train(i, temp)
-        # graph.visualize()
     opt_sol(graph)
 
 
@@ -43,7 +44,7 @@ def train(num_of_ants, graph):
     for i in range(1, num_of_ants + 1):
         ants.append(Ant(i))
 
-    for _ in range(NUM_OF_ITERATOINS):
+    for itr in range(1, NUM_OF_ITERATOINS + 1):
         for ant in ants:
             ant.path.clear()
             ant.nodes.clear()
@@ -79,6 +80,8 @@ def train(num_of_ants, graph):
                 edge.pheromone = (edge.pheromone) * \
                     (1-VAPORIZING_RATE) + edge.to_be_added_pheromone
                 edge.to_be_added_pheromone = 0
+        if itr % 10 == 0:
+            graph.visualize(num_of_ants, itr)
 
 
 def traverse(node, ant, graph, edge, dest):
